@@ -88,44 +88,94 @@ public:
 	Viewport	viewport;
 
 
+
+	glm::vec3 myNormalize (glm::vec3 input) {
+
+		float x = input[0];
+		float y = input[1];
+		float z = input[2];
+
+		float normalVectorNormalizingFactorMan = sqrt(sqr(x)+sqr(y)+sqr(z));
+
+		x = x / normalVectorNormalizingFactorMan;
+		y = y / normalVectorNormalizingFactorMan;
+		z = z / normalVectorNormalizingFactorMan;
+
+		return glm::vec3(x,y,z);
+	}
 	void myReshape(int w, int h) {
 		viewport.w = w;
 		viewport.h = h;
-  glViewport(0,0,viewport.w,viewport.h);// sets the rectangle that will be the window
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();                // loading the identity matrix for the screen
-  glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
+	glViewport(0,0,viewport.w,viewport.h);// sets the rectangle that will be the window
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();                // loading the identity matrix for the screen
+	glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
 }
 
 void initScene(){
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
-  myReshape(viewport.w,viewport.h);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
+	myReshape(viewport.w,viewport.h);
 }
 
 
 void myDisplay() {
 
-  glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
-  glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
-  glLoadIdentity();                            // make sure transformation is "zero'd"
+	glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
+	glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
+	glLoadIdentity();                            // make sure transformation is "zero'd"
 
-  //----------------------- code to draw objects --------------------------
-  // Rectangle Code
-  //glColor3f(red component, green component, blue component);
-  glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
+	//----------------------- code to draw objects --------------------------
+	// Rectangle Code
+	//glColor3f(red component, green component, blue component);
+	glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
 
-  //glBegin(GL_POLYGON);   
+	//glBegin(GL_POLYGON);   
 
-  glBegin(GL_TRIANGLES); 
-  //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
-  glVertex3f(-0.8f, 0.0f, 0.0f);               // bottom left corner of rectangle
-  glVertex3f(-0.8f, 0.5f, 0.0f);               // top left corner of rectangle
-  glVertex3f( 0.0f, 0.5f, 0.0f);               // top right corner of rectangle
- // glVertex3f( 0.0f, 0.0f, 0.0f);               // bottom right corner of rectangle
-  glEnd();
+	//for (int numPatch = 0; numPatch < numberOfPatches; numPatch++){
 
-  glFlush();
-  glutSwapBuffers();                           // swap buffers (we earlier set double buffer)
+		patch singlePatch = allPatches[1];
+
+		for (int i = 0; i < numberOfSubdivisions - 1; i++) {
+
+			for (int j = 0; j < numberOfSubdivisions - 1; j++) {
+
+				drawPoint point1 = singlePatch.row[i][j];
+				drawPoint point2 = singlePatch.row[i][j+1];
+				drawPoint point3 = singlePatch.row[i+1][j+1];
+				drawPoint point4 = singlePatch.row[i+1][j];
+
+
+				glColor3f(1.0f, i * subdivision, j * subdivision);
+
+				glBegin(GL_QUADS); 
+			//glVertex3f(x val, y val, z val (won't change the point because of the projection type));
+				glVertex3f(point1.pixelLocation[0], point1.pixelLocation[1], point1.pixelLocation[2]);
+				glVertex3f(point2.pixelLocation[0], point2.pixelLocation[1], point2.pixelLocation[2]);
+				glVertex3f(point3.pixelLocation[0], point3.pixelLocation[1], point3.pixelLocation[2]);
+				glVertex3f(point4.pixelLocation[0], point4.pixelLocation[1], point4.pixelLocation[2]);
+				glEnd();
+
+			}
+
+		}
+	//}
+
+	glFlush();
+	glutSwapBuffers(); 
+
+	/*
+	   glBegin(GL_QUADS); 
+	//glVertex3f(x val, y val, z val (won't change the point because of the projection type));
+	glVertex3f(-0.8f, 0.0f, 0.0f);               // bottom left corner of rectangle
+	glVertex3f(-0.8f, 0.5f, 0.0f);               // top left corner of rectangle
+	glVertex3f( 0.0f, 0.5f, 0.0f);               // top right corner of rectangle
+	glVertex3f( 0.0f, 0.0f, 0.0f);               // bottom right corner of rectangle
+	glEnd();
+
+	glFlush();
+	glutSwapBuffers();                           // swap buffers (we earlier set double buffer)
+
+	 */
 }
 
 
@@ -183,9 +233,9 @@ void loadScene(string file) {
 
 				singlePatch.row = new drawPoint* [numberOfSubdivisions];
 				for(int i = 0; i < numberOfSubdivisions; i++){
-    			
-    				singlePatch.row[i] = new drawPoint[numberOfSubdivisions];
-    			}	
+
+					singlePatch.row[i] = new drawPoint[numberOfSubdivisions];
+				}	
 
 				allPatches.push_back(singlePatch);
 
@@ -237,11 +287,11 @@ void loadScene(string file) {
 }
 
 void myFrameMove() {
-  //nothing here for now
+	//nothing here for now
 #ifdef _WIN32
-  Sleep(10);                                   //give ~10ms back to OS (so as not to waste the CPU)
+	Sleep(10);                                   //give ~10ms back to OS (so as not to waste the CPU)
 #endif
-  glutPostRedisplay(); // forces glut to call the display function (myDisplay())
+	glutPostRedisplay(); // forces glut to call the display function (myDisplay())
 }
 
 
@@ -324,7 +374,7 @@ drawPoint generatePlanarCurve(patch singlePatch, float u, float v) {
 	drawPoint toReturn = {};
 
 	toReturn.pixelLocation = onPlaneV.pixelLocation;
-	toReturn.pixelNormal = cross;
+	toReturn.pixelNormal = myNormalize(cross);
 	return toReturn;
 
 
@@ -334,48 +384,55 @@ drawPoint generatePlanarCurve(patch singlePatch, float u, float v) {
 
 void generatePatchPoints(){
 
-	patch currentPatch = allPatches[0];
+	for (int numPatch = 0; numPatch < numberOfPatches; numPatch++) {
 
-	float u = 0;
+		patch currentPatch = allPatches[numPatch];
 
-	float v = 0;
+		float u = 0;
 
-	for (int i = 0; i < numberOfSubdivisions; i++) {
+		float v = 0;
 
-		u = i * subdivision;
+		for (int i = 0; i < numberOfSubdivisions; i++) {
 
-		for (int j = 0; j < numberOfSubdivisions; j++) {
+			u = i * subdivision;
 
-			v = j * subdivision;
+			for (int j = 0; j < numberOfSubdivisions; j++) {
 
-			currentPatch.row[i][j] = generatePlanarCurve (currentPatch,u,v);
+				v = j * subdivision;
 
+				currentPatch.row[i][j] = generatePlanarCurve (currentPatch,u,v);
 
-		
+			}
 		}
-
 	}
-
-
 }
 
 int main(int argc, char *argv[]) {   // first argument is the program running
 	//This initializes glut
+
 	glutInit(&argc, argv);
 
 	//string testName = "test.bez";//argv[1];
 
-	string testName = argv[1];
+	string testName;	
+	string division;
+	string flag;
 
+	int commandLine = 1;
 
-	string division = argv[2];
-	subdivision = atof(division.c_str());
-
-	string flag = argv[3];
-	if (flag == "-a") {
-		adaptive = true;
+	if (commandLine) {
+		testName = argv[1];
+		division = argv[2];
+		subdivision = atof(division.c_str());
+		flag = argv[3];
+		if (flag == "-a") {
+			adaptive = true;
+		}
+	} else {
+		adaptive = false; 
+		subdivision = .1;
+		testName = "test.bez";
 	}
-
 
 	cout << adaptive << endl;
 	cout << subdivision << endl;
@@ -396,26 +453,26 @@ int main(int argc, char *argv[]) {   // first argument is the program running
 
 
 
-  //This tells glut to use a double-buffered window with red, green, and blue channels 
+	//This tells glut to use a double-buffered window with red, green, and blue channels 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
-  // Initalize theviewport size
+	// Initalize theviewport size
 	viewport.w = 400;
 	viewport.h = 400;
 
-  //The size and position of the window
+	//The size and position of the window
 	glutInitWindowSize(viewport.w, viewport.h);
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("CS184!");
 
- 	initScene();                                 // quick function to set up scene
+	initScene();                                 // quick function to set up scene
 
-  glutDisplayFunc(myDisplay);                  // function to run when its time to draw something
-  glutReshapeFunc(myReshape);                  // function to run when the window gets resized
-  glutIdleFunc(myFrameMove);                   // function to run when not handling any other task
-  glutMainLoop();                              // infinite loop that will keep drawing and resizing and whatever else
+	glutDisplayFunc(myDisplay);                  // function to run when its time to draw something
+	glutReshapeFunc(myReshape);                  // function to run when the window gets resized
+	glutIdleFunc(myFrameMove);                   // function to run when not handling any other task
+	glutMainLoop();                              // infinite loop that will keep drawing and resizing and whatever else
 
 
 
-  return 0;
+	return 0;
 }
