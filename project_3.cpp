@@ -133,11 +133,11 @@ void myDisplay() {
 
 	//for (int numPatch = 0; numPatch < numberOfPatches; numPatch++){
 
-		patch singlePatch = allPatches[1];
+		patch singlePatch = allPatches[0];
 
-		for (int i = 0; i < numberOfSubdivisions - 1; i++) {
+		for (int i = 0; i <= numberOfSubdivisions - 1; i++) {
 
-			for (int j = 0; j < numberOfSubdivisions - 1; j++) {
+			for (int j = 0; j <= numberOfSubdivisions - 1; j++) {
 
 				drawPoint point1 = singlePatch.row[i][j];
 				drawPoint point2 = singlePatch.row[i][j+1];
@@ -231,10 +231,10 @@ void loadScene(string file) {
 				singlePatch.allControlPoints = tempControlPoints;
 				tempControlPoints.clear();
 
-				singlePatch.row = new drawPoint* [numberOfSubdivisions];
-				for(int i = 0; i < numberOfSubdivisions; i++){
+				singlePatch.row = new drawPoint* [numberOfSubdivisions + 1];
+				for(int i = 0; i <= numberOfSubdivisions; i++){
 
-					singlePatch.row[i] = new drawPoint[numberOfSubdivisions];
+					singlePatch.row[i] = new drawPoint[numberOfSubdivisions + 1 ];
 				}	
 
 				allPatches.push_back(singlePatch);
@@ -392,13 +392,15 @@ void generatePatchPoints(){
 
 		float v = 0;
 
-		for (int i = 0; i < numberOfSubdivisions; i++) {
+		for (int i = 0; i <= numberOfSubdivisions; i++) {
 
 			u = i * subdivision;
 
-			for (int j = 0; j < numberOfSubdivisions; j++) {
+			for (int j = 0; j <= numberOfSubdivisions; j++) {
 
 				v = j * subdivision;
+
+				cout << u << "  " << v << endl;
 
 				currentPatch.row[i][j] = generatePlanarCurve (currentPatch,u,v);
 
