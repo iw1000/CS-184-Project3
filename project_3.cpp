@@ -81,31 +81,30 @@ bool adaptive = false;
 class Viewport;
 
 class Viewport {
-public:
+	public:
 		int w, h; // width and height
-	};
+};
 
-	Viewport	viewport;
+Viewport	viewport;
 
+glm::vec3 myNormalize (glm::vec3 input) {
 
+	float x = input[0];
+	float y = input[1];
+	float z = input[2];
 
-	glm::vec3 myNormalize (glm::vec3 input) {
+	float normalVectorNormalizingFactorMan = sqrt(sqr(x)+sqr(y)+sqr(z));
 
-		float x = input[0];
-		float y = input[1];
-		float z = input[2];
+	x = x / normalVectorNormalizingFactorMan;
+	y = y / normalVectorNormalizingFactorMan;
+	z = z / normalVectorNormalizingFactorMan;
 
-		float normalVectorNormalizingFactorMan = sqrt(sqr(x)+sqr(y)+sqr(z));
+	return glm::vec3(x,y,z);
+}
 
-		x = x / normalVectorNormalizingFactorMan;
-		y = y / normalVectorNormalizingFactorMan;
-		z = z / normalVectorNormalizingFactorMan;
-
-		return glm::vec3(x,y,z);
-	}
-	void myReshape(int w, int h) {
-		viewport.w = w;
-		viewport.h = h;
+void myReshape(int w, int h) {
+	viewport.w = w;
+	viewport.h = h;
 	glViewport(0,0,viewport.w,viewport.h);// sets the rectangle that will be the window
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();                // loading the identity matrix for the screen
@@ -117,9 +116,224 @@ void initScene(){
 	myReshape(viewport.w,viewport.h);
 }
 
+void drawPatches(){
+	patch singlePatch = allPatches[0];
 
+		for (int i = 0; i <= numberOfSubdivisions - 1; i++) {
+
+			for (int j = 0; j <= numberOfSubdivisions - 1; j++) {
+
+				drawPoint point1 = singlePatch.row[i][j];
+				drawPoint point2 = singlePatch.row[i][j+1];
+				drawPoint point3 = singlePatch.row[i+1][j+1];
+				drawPoint point4 = singlePatch.row[i+1][j];
+
+
+				glColor3f(1.0f, i * subdivision, j * subdivision);
+
+				glBegin(GL_QUADS); 
+			//glVertex3f(x val, y val, z val (won't change the point because of the projection type));
+				glVertex3f(point1.pixelLocation[0], point1.pixelLocation[1], point1.pixelLocation[2]);
+				glVertex3f(point2.pixelLocation[0], point2.pixelLocation[1], point2.pixelLocation[2]);
+				glVertex3f(point3.pixelLocation[0], point3.pixelLocation[1], point3.pixelLocation[2]);
+				glVertex3f(point4.pixelLocation[0], point4.pixelLocation[1], point4.pixelLocation[2]);
+				glEnd();
+
+			}
+
+		}
+
+}
+bool* keyStates = new bool[256];
+float x_position = 0.0f;
+float y_position = 0.0f;
+
+void keyOperations(void) {
+	if (keyStates[' ']) {
+		exit(0);
+	}
+	else if(keyStates['+']) {
+		
+	}
+	else if(keyStates['-']) {
+		
+	}
+	else if(keyStates['s']) {
+		
+	}
+	else if(keyStates['w']) {
+		
+	}
+	else if (keyStates[GLUT_KEY_LEFT] and keyStates[GLUT_ACTIVE_SHIFT]) {
+		x_position -= 0.05f;
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
+	}
+	else if (keyStates[GLUT_KEY_RIGHT] and keyStates[GLUT_ACTIVE_SHIFT]) {
+		x_position += 0.05f;
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
+
+	}
+	else if (keyStates[GLUT_KEY_UP] and keyStates[GLUT_ACTIVE_SHIFT]) {
+		y_position += 0.05f;
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
+
+	}
+	else if (keyStates[GLUT_KEY_DOWN] and keyStates[GLUT_ACTIVE_SHIFT]) {
+		y_position -= 0.05f;
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
+
+	}
+	else if (keyStates[GLUT_KEY_LEFT]) {
+		
+	}
+	else if (keyStates[GLUT_KEY_RIGHT]) {
+		
+
+	}
+	else if (keyStates[GLUT_KEY_UP]) {
+		
+	}
+	else if (keyStates[GLUT_KEY_DOWN]) {
+		
+		
+	}
+
+	cout << "(" << x_position << "," << y_position << ")\n";
+}
+
+void keyPressed (unsigned char key, int x, int y) {  
+	keyStates[key] = true;
+}
+
+void keyPressedUp(unsigned char key, int x, int y) {
+	keyStates[key] = false;
+}
+
+void keySpecial(int key, int x, int y){
+	int mod = glutGetModifiers();
+	keyStates[key] = true;
+	keyStates[mod] = true;
+}
+
+void keySpecialUp(int key, int x, int y){
+	int mod = glutGetModifiers();
+	keyStates[key] = false;
+	keyStates[mod] = false;
+}
+
+bool init = true;
 void myDisplay() {
+	keyOperations();
 
+	if (init) {
 	glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
 	glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
 	glLoadIdentity();                            // make sure transformation is "zero'd"
@@ -163,6 +377,8 @@ void myDisplay() {
 	glFlush();
 	glutSwapBuffers(); 
 
+	init = false;
+	}
 	/*
 	   glBegin(GL_QUADS); 
 	//glVertex3f(x val, y val, z val (won't change the point because of the projection type));
@@ -181,7 +397,7 @@ void myDisplay() {
 
 
 void printPoint(controlPoint p) {
-	cout << "Xvalue = " << p.pixelLocation[0] <<  "     Yvalue = " << p.pixelLocation[0] <<  "     Zvalue = " << p.pixelLocation[0] << endl;
+	cout << "Xvalue = " << p.pixelLocation[0] <<  "     Yvalue = " << p.pixelLocation[1] <<  "     Zvalue = " << p.pixelLocation[2] << endl;
 }
 
 void printPatch(patch p) {
@@ -191,11 +407,6 @@ void printPatch(patch p) {
 }
 
 
-void keyPressed (unsigned char key, int x, int y) {  
-	if (key == ' ') {
-		exit(0);
-	}
-}
 
 void loadScene(string file) {
 	//store variables and set stuff at the end
@@ -374,7 +585,7 @@ drawPoint generatePlanarCurve(patch singlePatch, float u, float v) {
 	drawPoint toReturn = {};
 
 	toReturn.pixelLocation = onPlaneV.pixelLocation;
-	toReturn.pixelNormal = myNormalize(cross);
+	toReturn.pixelNormal = glm::normalize(cross);
 	return toReturn;
 
 
@@ -468,6 +679,11 @@ int main(int argc, char *argv[]) {   // first argument is the program running
 	glutCreateWindow("CS184!");
 
 	initScene();                                 // quick function to set up scene
+
+	glutKeyboardFunc(keyPressed);
+	glutKeyboardUpFunc(keyPressedUp);
+	glutSpecialFunc(keySpecial);
+	glutSpecialUpFunc(keySpecialUp);
 
 	glutDisplayFunc(myDisplay);                  // function to run when its time to draw something
 	glutReshapeFunc(myReshape);                  // function to run when the window gets resized
