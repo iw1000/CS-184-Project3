@@ -454,7 +454,7 @@ void keyOperations(void) {
 
 	}
 	else if (keyStates[GLUT_KEY_UP]) {
-		x_rotation_angle -= 1.0f;
+		x_rotation_angle += 1.0f;
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		glMatrixMode(GL_MODELVIEW);
@@ -487,7 +487,7 @@ void keyOperations(void) {
 		glutSwapBuffers();
 	}
 	else if (keyStates[GLUT_KEY_DOWN]) {
-		x_rotation_angle += 1.0f;
+		x_rotation_angle -= 1.0f;
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		glMatrixMode(GL_MODELVIEW);
@@ -565,6 +565,27 @@ void myDisplay() {
 	glutSwapBuffers(); 
 
 	init = false;
+	}
+
+	//cout << zoomFactor << "\n";
+	if(zoomFactor < 0.0f) {
+		zoomFactor = 0.0f;
+	}
+
+	//cout << x_rotation_angle << "\n";
+	if(x_rotation_angle > 360.0f) {
+		x_rotation_angle -= 360.0f;
+	}
+	else if (x_rotation_angle < -360.0f) {
+		x_rotation_angle += 360.0f;
+	}
+
+	cout << y_rotation_angle << "\n";
+	if (y_rotation_angle > 360.0f) {
+		y_rotation_angle -= 360.0f;
+	}
+	else if (y_rotation_angle < -360.0f) {
+		y_rotation_angle += 360.0f;
 	}
 	/*
 	   glBegin(GL_QUADS); 
