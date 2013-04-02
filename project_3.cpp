@@ -108,7 +108,7 @@ void myReshape(int w, int h) {
 	glViewport(0,0,viewport.w,viewport.h);// sets the rectangle that will be the window
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();                // loading the identity matrix for the screen
-	glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
+	glOrtho(-1, 1, -1, 1, 2, -2);    // resize type = stretch
 }
 
 void initScene(){
@@ -117,7 +117,10 @@ void initScene(){
 }
 
 void drawPatches(){
-	patch singlePatch = allPatches[0];
+	
+	for (int numPatch = 0; numPatch < numberOfPatches; numPatch++){
+
+		patch singlePatch = allPatches[numPatch];
 
 		for (int i = 0; i <= numberOfSubdivisions - 1; i++) {
 
@@ -142,21 +145,105 @@ void drawPatches(){
 			}
 
 		}
+	}
 
 }
 bool* keyStates = new bool[256];
 float x_position = 0.0f;
 float y_position = 0.0f;
+float x_rotation_angle = 0.0f;
+float y_rotation_angle = 0.0f;
+float zoomFactor = 1.0f;
 
 void keyOperations(void) {
 	if (keyStates[' ']) {
 		exit(0);
 	}
 	else if(keyStates['+']) {
-		
+		zoomFactor -= 0.1f;
+		//cout << "Zoom In\n";
+
+
+		float width = viewport.w;
+		float height = viewport.h;
+
+		//cout << width << " " << height << "\n";
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		glOrtho(zoomFactor*-1, zoomFactor*1, zoomFactor*-1, zoomFactor*1, 2, -2);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
 	}
 	else if(keyStates['-']) {
-		
+		zoomFactor += 0.1f;
+		//cout << "Zoom In\n";
+
+
+		float width = viewport.w;
+		float height = viewport.h;
+
+		//cout << width << " " << height << "\n";
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		glOrtho(zoomFactor*-1, zoomFactor*1, zoomFactor*-1, zoomFactor*1, 2, -2);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
 	}
 	else if(keyStates['s']) {
 		
@@ -188,6 +275,8 @@ void keyOperations(void) {
 
 		glPushMatrix();
 			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
 			drawPatches();
 		glPopMatrix();
 
@@ -219,6 +308,8 @@ void keyOperations(void) {
 
 		glPushMatrix();
 			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
 			drawPatches();
 		glPopMatrix();
 
@@ -251,6 +342,8 @@ void keyOperations(void) {
 
 		glPushMatrix();
 			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
 			drawPatches();
 		glPopMatrix();
 
@@ -283,6 +376,8 @@ void keyOperations(void) {
 
 		glPushMatrix();
 			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
 			drawPatches();
 		glPopMatrix();
 
@@ -292,21 +387,141 @@ void keyOperations(void) {
 
 	}
 	else if (keyStates[GLUT_KEY_LEFT]) {
-		
+		y_rotation_angle -= 1.0f;
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
 	}
 	else if (keyStates[GLUT_KEY_RIGHT]) {
-		
+		y_rotation_angle += 1.0f;
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
 
 	}
 	else if (keyStates[GLUT_KEY_UP]) {
-		
+		x_rotation_angle -= 1.0f;
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
 	}
 	else if (keyStates[GLUT_KEY_DOWN]) {
-		
+		x_rotation_angle += 1.0f;
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3f(1.0f,0.0f,0.0f);
+
+		// Set view transform with gluLookAt or equivalent
+
+    // For each object (i) in the scene that needs to be rendered:
+        // Push relevant stacks, e.g., glPushMatrix, glPushAttrib.
+        // Set OpenGL state specific to object (i).
+        // Set model transform for object (i) using glTranslatef, glScalef, glRotatef, and/or equivalent.
+        // Issue rendering commands for object (i).
+        // Pop relevant stacks, (e.g., glPopMatrix, glPopAttrib.)
+    // End for loop.
+
+		// Swap buffers.
+
+
+		glPushMatrix();
+			glTranslatef(x_position, y_position, 0.0f);
+			glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
+			glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
+			drawPatches();
+		glPopMatrix();
+
+
+		glFlush();
+		glutSwapBuffers();
 		
 	}
 
-	cout << "(" << x_position << "," << y_position << ")\n";
+	//cout << "(" << x_position << "," << y_position << ")\n";
 }
 
 void keyPressed (unsigned char key, int x, int y) {  
@@ -344,35 +559,7 @@ void myDisplay() {
 	glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
 
 	//glBegin(GL_POLYGON);   
-
-	//for (int numPatch = 0; numPatch < numberOfPatches; numPatch++){
-
-		patch singlePatch = allPatches[0];
-
-		for (int i = 0; i <= numberOfSubdivisions - 1; i++) {
-
-			for (int j = 0; j <= numberOfSubdivisions - 1; j++) {
-
-				drawPoint point1 = singlePatch.row[i][j];
-				drawPoint point2 = singlePatch.row[i][j+1];
-				drawPoint point3 = singlePatch.row[i+1][j+1];
-				drawPoint point4 = singlePatch.row[i+1][j];
-
-
-				glColor3f(1.0f, i * subdivision, j * subdivision);
-
-				glBegin(GL_QUADS); 
-			//glVertex3f(x val, y val, z val (won't change the point because of the projection type));
-				glVertex3f(point1.pixelLocation[0], point1.pixelLocation[1], point1.pixelLocation[2]);
-				glVertex3f(point2.pixelLocation[0], point2.pixelLocation[1], point2.pixelLocation[2]);
-				glVertex3f(point3.pixelLocation[0], point3.pixelLocation[1], point3.pixelLocation[2]);
-				glVertex3f(point4.pixelLocation[0], point4.pixelLocation[1], point4.pixelLocation[2]);
-				glEnd();
-
-			}
-
-		}
-	//}
+	drawPatches();
 
 	glFlush();
 	glutSwapBuffers(); 
