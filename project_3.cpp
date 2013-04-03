@@ -34,17 +34,6 @@ inline float sqr(float x) { return x*x; }
 
 using namespace std;
 
-
-struct lightSource
-{
-	float xValue;
-	float yValue;
-	float zValue;
-	float redValue;
-	float greenValue;
-	float blueValue;
-};
-
 struct controlPoint
 {
 	glm::vec3 pixelLocation;
@@ -72,7 +61,10 @@ float zoomFactor = 1.0f;
 int numberOfPatches = 0;
 int numberOfSubdivisions = 0;
 float subdivision = 0;
+float error = 0.0f;
 bool adaptive = false; 
+bool wireToggle = false;
+bool flat = true;
 
 class Viewport;
 class Viewport {
@@ -108,6 +100,35 @@ public:
 void initScene(){
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
 	myReshape(viewport.w,viewport.h);
+
+	glShadeModel(GL_FLAT);
+	glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+
+	//Material properties
+	GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
+	GLfloat diffuse[] = {1.0f, 0.8f, 0.0f, 1.0f};
+	GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+	GLfloat shine = 100.0f;
+	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+	glMaterialf(GL_FRONT, GL_SHININESS, shine);
+
+	//Add ambient light
+	//GLfloat ambientColor[] = {0.2f, 0.2f, 0.2f, 1.0f}; //Color (0.2, 0.2, 0.2)
+	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+
+	//Add positioned light
+	GLfloat lightColor0[] = {0.5f, 0.5f, 0.5f, 1.0f}; //Color (0.5, 0.5, 0.5)
+	GLfloat lightPos0[] = {-1.0f, -1.0f, 5.0f, 1.0f}; 
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);	
+	glEnable(GL_NORMALIZE); //Automatically normalize normals
+
 }
 
 glm::vec3 generateNormalTriangle(drawPoint pixel1, drawPoint pixel2, drawPoint pixel3) {
@@ -119,8 +140,6 @@ glm::vec3 generateNormalTriangle(drawPoint pixel1, drawPoint pixel2, drawPoint p
 }
 
 void drawPatches(){
-
-	bool flat = true;
 
 	for (int numPatch = 0; numPatch < numberOfPatches; numPatch++){
 
@@ -135,15 +154,13 @@ void drawPatches(){
 				drawPoint point3 = singlePatch.row[i+1][j+1];
 				drawPoint point4 = singlePatch.row[i+1][j];
 
-				glEnable(GL_LIGHTING);
-				glEnable(GL_LIGHT0);
 
 				if (flat) {
 
 					glShadeModel(GL_FLAT);
 					glBegin(GL_TRIANGLES);
 					glm::vec3 triangleNormal = generateNormalTriangle(point1, point2, point3);
-					glNormal3f(triangleNormal[0], triangleNormal[1], triangleNormal[2] * -1);
+					glNormal3f(triangleNormal[0], triangleNormal[1], triangleNormal[2]);
 					glVertex3f(point1.pixelLocation[0], point1.pixelLocation[1], point1.pixelLocation[2]);
 					glVertex3f(point2.pixelLocation[0], point2.pixelLocation[1], point2.pixelLocation[2]);
 					glVertex3f(point3.pixelLocation[0], point3.pixelLocation[1], point3.pixelLocation[2]);
@@ -152,7 +169,7 @@ void drawPatches(){
 
 					glBegin(GL_TRIANGLES);
 					triangleNormal = generateNormalTriangle(point3, point4, point1);
-					glNormal3f(triangleNormal[0], triangleNormal[1], triangleNormal[2] * -1);
+					glNormal3f(triangleNormal[0], triangleNormal[1], triangleNormal[2]);
 					glVertex3f(point3.pixelLocation[0], point3.pixelLocation[1], point3.pixelLocation[2]);
 					glVertex3f(point4.pixelLocation[0], point4.pixelLocation[1], point4.pixelLocation[2]);
 					glVertex3f(point1.pixelLocation[0], point1.pixelLocation[1], point1.pixelLocation[2]);
@@ -199,17 +216,35 @@ void drawPatches(){
 }
 
 
+void drawPatchesAdaptive() {
+
+	for (int numPatch = 0; numPatch < numberOfPatches; numPatch++){
+		patch singlePatch = allPatches[numPatch];
+
+		for (int i = 0; i < 4; i++) {
+			//drawPoint point1 = 
+
+		}
+		
+	}
+
+}
+
 void reDrawMesh(){
 
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glColor3f(1.0f,0.0f,0.0f);
+	
 	glPushMatrix();
+
 	glTranslatef(x_position, y_position, 0.0f);
 	glRotatef(y_rotation_angle, 0.0f, 1.0f, 0.0f);
 	glRotatef(x_rotation_angle, 1.0f, 0.0f, 0.0f);
+
+	glColor3f(0.0f,0.65f,0.65f);
 	drawPatches();
+
 	glPopMatrix();
 	glFlush();
 	glutSwapBuffers();
@@ -240,10 +275,26 @@ void keyOperations(void) {
 		reDrawMesh();
 	}
 	else if(keyStates['s']) {
-
+		if (!flat) {
+			flat = true;
+		}
+		else {
+			flat = false;
+		}
+		reDrawMesh();
+		keyStates['s'] = false;
 	}
 	else if(keyStates['w']) {
-
+		if (!wireToggle) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			wireToggle = true;
+		}
+		else {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			wireToggle = false;
+		}
+		reDrawMesh();
+		keyStates['w'] = false;
 	}
 	else if (keyStates[GLUT_KEY_LEFT] and keyStates[GLUT_ACTIVE_SHIFT]) {
 		x_position -= 0.05f;
@@ -281,11 +332,21 @@ void keyOperations(void) {
 }
 
 void keyPressed (unsigned char key, int x, int y) {  
-	keyStates[key] = true;
+	if (key == 'w' || key == 's'){
+		keyStates[key] = false;
+	}
+	else {
+		keyStates[key] = true;
+	}
 }
 
 void keyPressedUp(unsigned char key, int x, int y) {
-	keyStates[key] = false;
+	if (key == 'w' || key == 's'){
+		keyStates[key] = true;
+	}
+	else {
+		keyStates[key] = false;
+	}
 }
 
 void keySpecial(int key, int x, int y){
@@ -309,8 +370,14 @@ void myDisplay() {
 		glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
 		glLoadIdentity();                            // make sure transformation is "zero'd"
 
-		glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
-		drawPatches();
+		glColor3f(0.0f,0.65f,0.65f);                   // setting the color to pure red 90% for the rect
+
+		if (adaptive) {
+			drawPatchesAdaptive();
+		}
+		else {
+			drawPatches();
+		}		
 
 		glFlush();
 		glutSwapBuffers(); 
@@ -325,14 +392,14 @@ void myDisplay() {
 	if(x_rotation_angle > 360.0f) {
 		x_rotation_angle -= 360.0f;
 	}
-	else if (x_rotation_angle < -360.0f) {
+	else if (x_rotation_angle < 0.0f) {
 		x_rotation_angle += 360.0f;
 	}
 
 	if (y_rotation_angle > 360.0f) {
 		y_rotation_angle -= 360.0f;
 	}
-	else if (y_rotation_angle < -360.0f) {
+	else if (y_rotation_angle < 0.0f) {
 		y_rotation_angle += 360.0f;
 	}
 
@@ -544,6 +611,22 @@ void generatePatchPoints(){
 	}
 }
 
+void generateAdaptivePatchPoints() {
+
+	for (int numPatch = 0; numPatch < numberOfPatches; numPatch++) {
+		patch currentPatch = allPatches[numPatch];
+		float u = 0;
+		float v = 0;
+		for (int i = 0; i <= numberOfSubdivisions; i++) {
+			u = i * subdivision;
+			for (int j = 0; j <= numberOfSubdivisions; j++) {
+				v = j * subdivision;
+				currentPatch.row[i][j] = generatePlanarCurve (currentPatch,u,v);
+			}
+		}
+	}
+}
+
 int main(int argc, char *argv[]) {   // first argument is the program running
 
 	glutInit(&argc, argv);
@@ -561,6 +644,8 @@ int main(int argc, char *argv[]) {   // first argument is the program running
 		flag = argv[3];
 		if (flag == "-a") {
 			adaptive = true;
+			// error = distance evaluated at midpoints of polygon edges and center of each quadrilateral
+			error = subdivision;
 		}
 	} else {
 		adaptive = false; 
@@ -577,10 +662,17 @@ int main(int argc, char *argv[]) {   // first argument is the program running
 	//cout << numberOfSubdivisions << endl;
 
 	loadScene(testName);
-	generatePatchPoints();
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
-	viewport.h = 400;
+	if (adaptive) {
+		generateAdaptivePatchPoints();
+	}
+	else {
+		generatePatchPoints();
+	}
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+
+	viewport.w = 600;
+	viewport.h = 600;
 
 	glutInitWindowSize(viewport.w, viewport.h);
 	glutInitWindowPosition(0, 0);
