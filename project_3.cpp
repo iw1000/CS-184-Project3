@@ -58,6 +58,7 @@ float y_position = 0.0f;
 float x_rotation_angle = 0.0f;
 float y_rotation_angle = 0.0f;
 float zoomFactor = 1.0f;
+float max_point = 0.0f;
 int numberOfPatches = 0;
 int numberOfSubdivisions = 0;
 float subdivision = 0;
@@ -94,7 +95,10 @@ public:
 	glViewport(0,0,viewport.w,viewport.h);// sets the rectangle that will be the window
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();                // loading the identity matrix for the screen
-	glOrtho(-1, 1, -1, 1, 4, -4);    // resize type = stretch
+
+	//cout << max_point << "\n";
+
+	glOrtho(-1*max_point, 1*max_point, -1*max_point, 1*max_point, 4, -4);    // resize type = stretch
 }
 
 void initScene(){
@@ -106,9 +110,9 @@ void initScene(){
 
 	//Material properties
 	GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-	GLfloat diffuse[] = {1.0f, 0.8f, 0.0f, 1.0f};
+	GLfloat diffuse[] = {0.5f, 0.7f, 0.9f, 1.0f};
 	GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-	GLfloat shine = 100.0f;
+	GLfloat shine = 50.0f;
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
@@ -120,7 +124,7 @@ void initScene(){
 
 	//Add positioned light
 	GLfloat lightColor0[] = {0.5f, 0.5f, 0.5f, 1.0f}; //Color (0.5, 0.5, 0.5)
-	GLfloat lightPos0[] = {-1.0f, -1.0f, 5.0f, 1.0f}; 
+	GLfloat lightPos0[] = {-3.0f, -3.0f, 0.0f, 1.0f}; 
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
 
@@ -252,6 +256,7 @@ void reDrawMesh(){
 }
 
 void keyOperations(void) {
+
 	if (keyStates[' ']) {
 		exit(0);
 	}
@@ -260,7 +265,7 @@ void keyOperations(void) {
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(zoomFactor*-1, zoomFactor*1, zoomFactor*-1, zoomFactor*1, 4, -4);
+		glOrtho(zoomFactor*-1*max_point, zoomFactor*1*max_point, zoomFactor*-1*max_point, zoomFactor*1*max_point, 4, -4);
 
 		reDrawMesh();
 
@@ -270,7 +275,7 @@ void keyOperations(void) {
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(zoomFactor*-1, zoomFactor*1, zoomFactor*-1, zoomFactor*1, 4, -4);
+		glOrtho(zoomFactor*-1*max_point, zoomFactor*1*max_point, zoomFactor*-1*max_point, zoomFactor*1*max_point, 4, -4);
 
 		reDrawMesh();
 	}
@@ -363,10 +368,9 @@ void keySpecialUp(int key, int x, int y){
 
 bool init = true;
 void myDisplay() {
-	keyOperations();
 
 	if (init) {
-		glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
+		/*glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
 		glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
 		glLoadIdentity();                            // make sure transformation is "zero'd"
 
@@ -380,10 +384,13 @@ void myDisplay() {
 		}		
 
 		glFlush();
-		glutSwapBuffers(); 
+		glutSwapBuffers(); */
+		reDrawMesh();
 
 		init = false;
 	}
+
+	keyOperations();
 
 	if(zoomFactor < 0.0f) {
 		zoomFactor = 0.0f;
@@ -413,6 +420,10 @@ void printPatch(patch p) {
 	for (int i = 0; i < p.allControlPoints.size(); i++ ) {
 		printPoint(p.allControlPoints[i]);
 	}
+}
+
+float calculateMagnitude(glm::vec3 vect) {
+	return sqrt(sqr(vect[0]) + sqr(vect[1]) + sqr(vect[2]));
 }
 
 void loadScene(string file) {
@@ -468,6 +479,9 @@ void loadScene(string file) {
 
 				controlPoint singleControl = {};
 				singleControl.pixelLocation =  glm::vec3(x, y, z);
+				if (max_point < calculateMagnitude(singleControl.pixelLocation)) {
+					max_point = calculateMagnitude(singleControl.pixelLocation);
+				}
 				tempControlPoints.push_back(singleControl);
 
 				x = atof(splitline[3].c_str());
@@ -476,6 +490,11 @@ void loadScene(string file) {
 
 				controlPoint singleControl1 = {};
 				singleControl1.pixelLocation =  glm::vec3(x, y, z);
+
+				if (max_point < calculateMagnitude(singleControl1.pixelLocation)) {
+					max_point = calculateMagnitude(singleControl1.pixelLocation);
+				}
+
 				tempControlPoints.push_back(singleControl1);	
 
 				x = atof(splitline[6].c_str());
@@ -484,6 +503,11 @@ void loadScene(string file) {
 
 				controlPoint singleControl2 = {};
 				singleControl2.pixelLocation =  glm::vec3(x, y, z);
+
+				if (max_point < calculateMagnitude(singleControl2.pixelLocation)) {
+					max_point = calculateMagnitude(singleControl2.pixelLocation);
+				}
+
 				tempControlPoints.push_back(singleControl2);	
 
 				x = atof(splitline[9].c_str());
@@ -492,7 +516,14 @@ void loadScene(string file) {
 
 				controlPoint singleControl3 = {};
 				singleControl3.pixelLocation =  glm::vec3(x, y, z);
-				tempControlPoints.push_back(singleControl3);	;
+
+				if (max_point < calculateMagnitude(singleControl3.pixelLocation)) {
+					max_point = calculateMagnitude(singleControl3.pixelLocation);
+				}
+
+				tempControlPoints.push_back(singleControl3);
+
+
 			}
 
 			count++;
@@ -680,14 +711,15 @@ int main(int argc, char *argv[]) {   // first argument is the program running
 
 	initScene();                                 // quick function to set up scene
 
+	glutDisplayFunc(myDisplay);                  // function to run when its time to draw something
+	glutReshapeFunc(myReshape);                  // function to run when the window gets resized
+	glutIdleFunc(myFrameMove);                   // function to run when not handling any other task
+
 	glutKeyboardFunc(keyPressed);
 	glutKeyboardUpFunc(keyPressedUp);
 	glutSpecialFunc(keySpecial);
 	glutSpecialUpFunc(keySpecialUp);
 
-	glutDisplayFunc(myDisplay);                  // function to run when its time to draw something
-	glutReshapeFunc(myReshape);                  // function to run when the window gets resized
-	glutIdleFunc(myFrameMove);                   // function to run when not handling any other task
 	glutMainLoop();                              // infinite loop that will keep drawing and resizing and whatever else
 
 	return 0;
