@@ -14,7 +14,7 @@ all: main
 main: project_3.o 
 	$(CC) -g  $(CFLAGS) -o as3 project_3.o $(LDFLAGS) 
 project_3.o: project_3.cpp
-	$(CC) -g $(CFLAGS) -c project_3.cpp -o project_3.o
+	$(CC) -g $(CFLAGS) -I./glm-0.9.4.2 -c project_3.cpp -o project_3.o
 clean: 
 	$(RM) *.o as3
  
