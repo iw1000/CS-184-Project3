@@ -45,12 +45,17 @@ struct controlPoint
 struct adaptiveTriangle {
 
 	controlPoint point1;
+	glm::vec3 point1PixelNormal;
 	float point1U;
 	float point1V;
+
 	controlPoint point2;
+	glm::vec3 point2PixelNormal;
 	float point2U;
 	float point2V;
+
 	controlPoint point3;
+	glm::vec3 point3PixelNormal;
 	float point3U;
 	float point3V;
 
@@ -75,8 +80,6 @@ struct patch
 vector <patch> allPatches;
 
 vector <adaptiveTriangle> adaptiveTrianglesToRender;
-
-
 
 bool* keyStates = new bool[256];
 float x_position = 0.0f;
@@ -206,13 +209,17 @@ void drawPatches(){
 			}else {
 
 				glShadeModel(GL_SMOOTH);
-
 				glBegin(GL_TRIANGLES);
-				glm::vec3 triangleNormal = generateNormalTriangle(tempTri.point1, tempTri.point2, tempTri.point3);
-				glNormal3f(triangleNormal[0], triangleNormal[1], triangleNormal[2] );
+
+				glNormal3f(tempTri.point1PixelNormal[0], tempTri.point1PixelNormal[1], tempTri.point1PixelNormal[2]);
 				glVertex3f(tempTri.point1.pixelLocation[0], tempTri.point1.pixelLocation[1], tempTri.point1.pixelLocation[2]);
+
+				glNormal3f(tempTri.point2PixelNormal[0], tempTri.point2PixelNormal[1], tempTri.point2PixelNormal[2]);
 				glVertex3f(tempTri.point2.pixelLocation[0], tempTri.point2.pixelLocation[1], tempTri.point2.pixelLocation[2]);
+
+				glNormal3f(tempTri.point3PixelNormal[0], tempTri.point3PixelNormal[1], tempTri.point3PixelNormal[2]);
 				glVertex3f(tempTri.point3.pixelLocation[0], tempTri.point3.pixelLocation[1], tempTri.point3.pixelLocation[2]);
+
 				glEnd();
 
 
@@ -222,14 +229,17 @@ void drawPatches(){
 	}
 	else {
 
+
 		for (int numPatch = 0; numPatch < numberOfPatches; numPatch++){
 
 			patch singlePatch = allPatches[numPatch];
 
 
-			for (int i = 0; i <= numberOfSubdivisions - 1; i++) {
+			int temp = ceil (1 / subdivision) - 1;
 
-				for (int j = 0; j <= numberOfSubdivisions - 1; j++) {
+			for (int i = 0; i <= temp; i++) {
+
+				for (int j = 0; j <= temp; j++) {
 
 					drawPoint point1 = singlePatch.row[i][j];
 					drawPoint point2 = singlePatch.row[i][j+1];
@@ -242,22 +252,15 @@ void drawPatches(){
 
 						glShadeModel(GL_FLAT);
 
-						glBegin(GL_TRIANGLES);
+						glBegin(GL_QUADS);
 						glm::vec3 triangleNormal = generateNormalTriangle(point1, point2, point3);
 						glNormal3f(triangleNormal[0], triangleNormal[1], triangleNormal[2] );
 						glVertex3f(point1.pixelLocation[0], point1.pixelLocation[1], point1.pixelLocation[2]);
 						glVertex3f(point2.pixelLocation[0], point2.pixelLocation[1], point2.pixelLocation[2]);
 						glVertex3f(point3.pixelLocation[0], point3.pixelLocation[1], point3.pixelLocation[2]);
-						glEnd();
-
-
-						glBegin(GL_TRIANGLES);
-						triangleNormal = generateNormalTriangle(point3, point4, point1);
-						glNormal3f(triangleNormal[0], triangleNormal[1], triangleNormal[2] );
-						glVertex3f(point3.pixelLocation[0], point3.pixelLocation[1], point3.pixelLocation[2]);
 						glVertex3f(point4.pixelLocation[0], point4.pixelLocation[1], point4.pixelLocation[2]);
-						glVertex3f(point1.pixelLocation[0], point1.pixelLocation[1], point1.pixelLocation[2]);
 						glEnd();
+
 
 					} else {
 
@@ -289,6 +292,7 @@ void drawPatches(){
 						glVertex3f(point1.pixelLocation[0], point1.pixelLocation[1], point1.pixelLocation[2]);
 
 						glEnd();
+
 
 					}
 
@@ -552,10 +556,13 @@ void myFrameMove() {
 				singlePatch.allControlPoints = tempControlPoints;
 				tempControlPoints.clear();
 
-				singlePatch.row = new drawPoint* [numberOfSubdivisions + 1];
-				for(int i = 0; i <= numberOfSubdivisions; i++){
+				int temp = ceil (1 / subdivision) + 1;
 
-					singlePatch.row[i] = new drawPoint[numberOfSubdivisions + 1 ];
+				singlePatch.row = new drawPoint* [temp];  /// 3 now   /// numberOfSub = 1
+
+				for(int i = 0; i <= ceil (1 / subdivision); i++){
+
+					singlePatch.row[i] = new drawPoint[temp];
 				}	
 
 				allPatches.push_back(singlePatch);
@@ -756,7 +763,7 @@ drawPoint generatePlanarCurve(patch singlePatch, float u, float v) {
 }
 
 
-void cornerTest (patch singlePatch, adaptiveTriangle triangleToSplit) {
+bool cornerTestFine (patch singlePatch, adaptiveTriangle triangleToSplit) {
 
 	drawPoint corner1 = generatePlanarCurve(singlePatch, triangleToSplit.point1U, triangleToSplit.point1V);
 	drawPoint corner2 = generatePlanarCurve(singlePatch, triangleToSplit.point2U, triangleToSplit.point2V);
@@ -780,15 +787,17 @@ void cornerTest (patch singlePatch, adaptiveTriangle triangleToSplit) {
 	if ((total1 + total2 + total3) != 0) {
 		cout << "total 1:  "<< total1 << "   total 2:  "<< total2 << "   total 3:  "<< total3<< endl;
 		cout << "triangle" << endl;
-		printTriangle(triangleToSplit);
-		exit(1);
+		return false;
 	}
+	return true;
 
 }
 
 void recursivelySplit(patch singlePatch, adaptiveTriangle triangleToSplit, int depth){
 
-	cornerTest(singlePatch, triangleToSplit);
+	if (cornerTestFine(singlePatch, triangleToSplit) == false) {
+		return;
+	}
 
 	drawPoint midTest1 =  generatePlanarCurve(singlePatch, ((triangleToSplit.point1U + triangleToSplit.point2U) / 2) , ((triangleToSplit.point1V + triangleToSplit.point2V) / 2));
 	drawPoint midTest2 =  generatePlanarCurve(singlePatch, ((triangleToSplit.point2U + triangleToSplit.point3U) / 2) , ((triangleToSplit.point2V + triangleToSplit.point3V) / 2));
@@ -1009,6 +1018,16 @@ void recursivelySplit(patch singlePatch, adaptiveTriangle triangleToSplit, int d
 	} else {
 			///everything fine
 
+		//calculate the 3 normals
+
+		drawPoint point1Normals = generatePlanarCurve(singlePatch, triangleToSplit.point1U, triangleToSplit.point1V);
+		drawPoint point2Normals = generatePlanarCurve(singlePatch, triangleToSplit.point2U, triangleToSplit.point2V);
+		drawPoint point3Normals = generatePlanarCurve(singlePatch, triangleToSplit.point3U, triangleToSplit.point3V);
+
+		triangleToSplit.point1PixelNormal = point1Normals.pixelNormal;
+		triangleToSplit.point2PixelNormal = point2Normals.pixelNormal;
+		triangleToSplit.point3PixelNormal = point3Normals.pixelNormal;
+
 		adaptiveTrianglesToRender.push_back(triangleToSplit);
 
 	}
@@ -1053,14 +1072,18 @@ void generateAdaptiveTesselation() {
 
 void generatePatchPoints(){
 
+	int temp = ceil (1 / subdivision) + 1;
+
 	for (int numPatch = 0; numPatch < numberOfPatches; numPatch++) {
 		patch currentPatch = allPatches[numPatch];
 		float u = 0;
 		float v = 0;
-		for (int i = 0; i <= numberOfSubdivisions; i++) {
+		for (int i = 0; i < temp;  i++) {
 			u = i * subdivision;
-			for (int j = 0; j <= numberOfSubdivisions; j++) {
+			u = min (u, 1.0f);
+			for (int j = 0; j <  temp; j++) {
 				v = j * subdivision;
+				v = min (v, 1.0f);
 				currentPatch.row[i][j] = generatePlanarCurve (currentPatch,u,v);
 			}
 		}
